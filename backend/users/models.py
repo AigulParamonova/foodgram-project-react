@@ -27,7 +27,6 @@ class User(AbstractUser):
         max_length=150,
         unique=True
     )
-    
 
     class Meta:
         ordering = ('username',)
