@@ -8,9 +8,12 @@ class Command(BaseCommand):
     help = 'Добавляет ингредиенты из сsv файла в базу данных sqlite3.'
 
     def handle(self, *args, **options):
-        with open('C:/Dev/foodgram-project-react/data/ingredients.csv', 'r', encoding='utf-8') as file:
+        with open(
+            'C:/Dev/foodgram-project-react/data/ingredients.csv',
+            'r', encoding='utf-8'
+        ) as file:
             reader = csv.reader(file, delimiter=',')
-            header = ('name', 'measurement_unit')
+            # header = ('name', 'measurement_unit')
             Ingredient.objects.all().delete
             for row in reader:
                 name, unit = row

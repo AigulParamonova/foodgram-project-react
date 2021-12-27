@@ -28,10 +28,3 @@ class RecipeFilter(filters.FilterSet):
         if value is not None:
             return queryset.filter(cart__user=user)
         return queryset
-
-
-
-
-
-
-

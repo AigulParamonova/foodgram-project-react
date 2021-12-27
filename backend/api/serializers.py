@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'password' )
+                  'last_name', 'is_subscribed', 'password', )
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
@@ -61,7 +61,11 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
-    ingredients = IngredientRecipeSerializer(source='quantity', many=True, read_only=True,)
+    ingredients = IngredientRecipeSerializer(
+        source='quantity',
+        many=True,
+        read_only=True
+    )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
