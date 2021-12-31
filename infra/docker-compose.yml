@@ -16,8 +16,8 @@ services:
       - db
 
   backend:
-    image: paramonova/foodgram
-    build: .
+    image: paramonova/foodgram:latest
+    build: ../backend
     restart: always 
     volumes:
       - static_value:/code/static/
@@ -25,7 +25,7 @@ services:
     depends_on:
       - db
     env_file:
-      - .env
+      - ./.env
 
   nginx:
     image: nginx:1.19.3
