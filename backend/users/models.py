@@ -22,11 +22,6 @@ class User(AbstractUser):
         'Фамилия',
         max_length=150
     )
-    password = models.CharField(
-        'Пароль',
-        max_length=150,
-        unique=True
-    )
 
     class Meta:
         ordering = ('username',)

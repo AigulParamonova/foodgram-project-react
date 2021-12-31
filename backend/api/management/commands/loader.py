@@ -13,7 +13,6 @@ class Command(BaseCommand):
             'r', encoding='utf-8'
         ) as file:
             reader = csv.reader(file, delimiter=',')
-            # header = ('name', 'measurement_unit')
             Ingredient.objects.all().delete
             for row in reader:
                 name, unit = row
