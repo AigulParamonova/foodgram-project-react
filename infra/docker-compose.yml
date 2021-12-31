@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image: paramonova/foodgram_frontend:latest
+    image: paramonova/foodgram-frontend:latest
     volumes:
       - ./frontend/:/app/result_build/
     depends_on:
