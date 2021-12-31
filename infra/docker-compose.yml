@@ -5,6 +5,7 @@ services:
     image: postgres:12.4
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    restart: always
     env_file:
       - ./.env
   
@@ -38,6 +39,7 @@ services:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
       - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
+    restart: always
     depends_on:
       - backend
       - frontend
