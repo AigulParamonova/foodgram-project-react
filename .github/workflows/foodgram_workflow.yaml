@@ -58,9 +58,9 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
           sudo docker pull paramonova/foodgram:latest
-          cd foodgram/
+          cd backend/
           sudo docker-compose stop
-          sudo docker-compose rm web          
+          sudo docker-compose rm backend          
           touch .env
           echo DEBUG=False > .env
           echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
@@ -72,7 +72,7 @@ jobs:
           echo DB_HOST=${{ secrets.DB_HOST }} >> .env
           echo DB_PORT=${{ secrets.DB_PORT }} >> .env          
           sudo docker-compose up -d
-          
+
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
