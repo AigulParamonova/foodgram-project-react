@@ -4,6 +4,8 @@ from django.db import models
 
 class User(AbstractUser):
     """Модель пользователя."""
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     email = models.EmailField(
         'Адрес электронной почты',
         max_length=254,
