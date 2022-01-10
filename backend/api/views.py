@@ -96,8 +96,8 @@ class CustomUserViewSet(UserViewSet):
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
         Subscribe.objects.filter(user=user, author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
-        
+
+
 class TagsViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
