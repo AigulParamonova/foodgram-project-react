@@ -36,7 +36,7 @@ services:
       - media_value:/media/
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./frontend/build:/usr/share/nginx/html/
-      - ./docs/usr/share/nginx/html/api/docs/
+      - ./docs/:/usr/share/nginx/html/api/docs/
     restart: always
     depends_on:
       - backend
