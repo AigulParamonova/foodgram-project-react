@@ -26,7 +26,7 @@ class User(AbstractUser):
     )
 
     class Meta:
-        ordering = ('username',)
+        ordering = ('id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -38,7 +38,7 @@ class Subscribe(models.Model):
     """Модель подписки."""
     user = models.ForeignKey(
         User,
-        verbose_name='Подписчик',
+        verbose_name='Пользователь',
         related_name='follower',
         on_delete=models.CASCADE
     )

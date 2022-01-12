@@ -18,5 +18,6 @@ class UserAdmin(admin.ModelAdmin):
 class SubscribeAdmin(admin.ModelAdmin):
     """Представляет модель Subscribe в интерфейсе администратора."""
     list_display = ('id', 'user', 'author')
+    search_fields = ('user',)
     list_filter = ('user', )
     empty_value_display = EMPTY_VALUE

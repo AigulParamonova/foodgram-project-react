@@ -11,6 +11,7 @@ class TagAdmin(admin.ModelAdmin):
     """Представляет модель Tag в интерфейсе администратора."""
     list_display = ('id', 'name', 'color', 'slug')
     search_fields = ('name',)
+    list_filter = ('name',)
     empty_value_display = EMPTY_VALUE
 
 
@@ -24,6 +25,7 @@ class IngredientAdmin(admin.ModelAdmin):
     """Представляет модель Ingredient в интерфейсе администратора."""
     list_display = ('id', 'name', 'measurement_unit')
     search_fields = ('name',)
+    list_filter = ('name',)
     inlines = (IngredientRecipeInline,)
     empty_value_display = EMPTY_VALUE
 
@@ -44,6 +46,8 @@ class RecipeAdmin(admin.ModelAdmin):
 class FavoriteAdmin(admin.ModelAdmin):
     """Представляет модель Favorite в интерфейсе администратора."""
     list_display = ('id', 'user', 'recipe')
+    search_fields = ('user',)
+    list_filter = ('user',)
     empty_value_display = EMPTY_VALUE
 
 
@@ -51,4 +55,6 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingCartAdmin(admin.ModelAdmin):
     """Представляет модель ShoppingCart в интерфейсе администратора."""
     list_display = ('id', 'user', 'recipe')
+    search_fields = ('user',)
+    list_filter = ('user',)
     empty_value_display = EMPTY_VALUE

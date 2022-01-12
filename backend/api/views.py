@@ -1,4 +1,4 @@
-
+from django.contrib.auth import get_user_model
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -32,8 +32,6 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        # serializer = CustomUserCreateSerializer(self.request.user)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False,
             methods=['post'],
@@ -56,8 +54,8 @@ class CustomUserViewSet(UserViewSet):
             methods=['get'],
             permission_classes=(IsAuthenticated, ))
     def subscriptions(self, request):
-        user = request.user
-        queryset = Subscribe.objects.filter(user=user)
+        user = self.request.user
+        queryset = User.objects.filter(follower__user=user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
             pages,
