@@ -1,12 +1,12 @@
-from django.http.response import HttpResponse
+import csv
+
+from django.db.models import Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -16,8 +16,11 @@ from users.models import Subscribe, User
 
 from .filters import RecipeFilter
 from .permissions import IsAuthorAdminOrReadOnly
-from .serializers import (CustomUserSerializer, IngredientSerializer,
-                          RecipeSerializer, SubscribeSerializer, TagSerializer)
+from .serializers import (CustomUserSerializer, FavoriteSerializer,
+                          IngredientSerializer, PasswordSerializer,
+                          RecipeCreateSerializer, RecipeListSerializer,
+                          ShoppingCartSerializer, SubscribeSerializer,
+                          TagSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -37,7 +40,9 @@ class CustomUserViewSet(UserViewSet):
             permission_classes=(IsAuthenticated, ))
     def set_password(self, request, pk=None):
         user = self.request.user
-        serializer = CustomUserSerializer(
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        serializer = PasswordSerializer(
             data=request.data,
             context={'request': request}
         )
@@ -71,28 +76,28 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         user = self.request.user
         author = get_object_or_404(User, id=id)
-        subscribe = Subscribe.objects.filter(user=user, author=author).exists()
+        subscribe = Subscribe.objects.filter(user=user, author=author)
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         if request.method == 'GET':
-            if author != user and not subscribe:
-                Subscribe.objects.create(user=user, author=author)
-                serializer = SubscribeSerializer(
-                    author,
-                    context={'request': request}
-                )
-                return Response(data=serializer.data,
-                                status=status.HTTP_201_CREATED)
-            data = {
-                'errors': ('Вы подписаны на этого автора, '
-                           'или пытаетесь подписаться на себя.')
-            }
-            return Response(data=data, status=status.HTTP_403_FORBIDDEN)
-        if not Subscribe.objects.filter(author=author).exists():
-            data = {
-                'errors': ('Вы не подписаны на данного автора.')
-            }
-            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-        Subscribe.objects.filter(user=user, author=author).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            if subscribe.exists():
+                data = {
+                    'errors': ('Вы подписаны на этого автора, '
+                               'или пытаетесь подписаться на себя.')}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            Subscribe.objects.create(user=user, author=author)
+            serializer = SubscribeSerializer(
+                author,
+                context={'request': request}
+            )
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            if not subscribe.exists():
+                data = {'errors': 'Вы не подписаны на данного автора.'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            subscribe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -111,23 +116,46 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    serializer_class = RecipeListSerializer
     permission_classes = (IsAuthorAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RecipeListSerializer
+        return RecipeCreateSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(
         methods=['get', 'delete'],
         detail=True,
-        permission_classes=[IsAuthenticated, ],
-        url_path='favorite'
+        permission_classes=(IsAuthenticated, )
     )
     def favorite(self, request, pk=None):
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        in_favorite = Favorite.objects.filter(
+            user=user, recipe=recipe
+        )
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         if request.method == 'GET':
-            return self.create_obj(Favorite, request.user, pk)
+            if not in_favorite:
+                favorite = Favorite.objects.create(user=user, recipe=recipe)
+                serializer = FavoriteSerializer(favorite.recipe)
+                return Response(
+                    data=serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
         elif request.method == 'DELETE':
-            return self.delete_obj(Favorite, request.user, pk)
-        return None
+            if not in_favorite:
+                data = {'errors': 'Такого рецепта нет в избранных.'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            in_favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
@@ -135,68 +163,54 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ],
     )
     def shopping_cart(self, request, pk=None):
-        if request.method == 'GET':
-            return self.create_obj(ShoppingCart, request.user, pk)
-        elif request.method == 'DELETE':
-            return self.delete_obj(ShoppingCart, request.user, pk)
-        return None
-
-    def create_obj(self, model, user, pk):
-        if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response(
-                {'errors': 'Такой рецепт уже есть в списке.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        recipe = get_object_or_404(Recipe, id=pk)
-        model.objects.create(user=user, recipe=recipe)
-        serializer = RecipeSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete_obj(self, model, user, pk):
-        obj = model.objects.filter(user=user, recipe__id=pk)
-        if obj.exists():
-            obj.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'errors': 'Рецепт уже удален'}, status=status.HTTP_400_BAD_REQUEST
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        in_shopping_cart = ShoppingCart.objects.filter(
+            user=user,
+            recipe=recipe
         )
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        if request.method == 'GET':
+            if not in_shopping_cart:
+                shopping_cart = ShoppingCart.objects.create(
+                    user=user,
+                    recipe=recipe
+                )
+                serializer = ShoppingCartSerializer(shopping_cart.recipe)
+                return Response(
+                    data=serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+        elif request.method == 'DELETE':
+            if not in_shopping_cart:
+                data = {'errors': 'Такой рецепта нет в списке покупок.'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            in_shopping_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         methods=['get'],
         detail=False,
         permission_classes=[IsAuthenticated, ],
-        url_path='download_shopping_cart'
     )
     def download_shopping_cart(self, request):
         """Скачать список покупок."""
-        final_list = {}
+        user = self.request.user
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         ingredients = IngredientRecipe.objects.filter(
-            recipe__cart__user=request.user).values_list(
+            recipe__shopping_cart__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(ingredient_amount=Sum('amount')).values_list(
             'ingredient__name', 'ingredient__measurement_unit',
-            'amount')
-        for item in ingredients:
-            name = item[0]
-            if name not in final_list:
-                final_list[name] = {
-                    'measurement_unit': item[1],
-                    'amount': item[2]
-                }
-            else:
-                final_list[name]['amount'] += item[2]
-        pdfmetrics.registerFont(
-            TTFont('Slimamif', 'Slimamif.ttf', 'UTF-8'))
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = ('attachment; '
-                                           'filename="shopping_list.pdf"')
-        page = canvas.Canvas(response)
-        page.setFont('Slimamif', size=24)
-        page.drawString(200, 800, 'Список ингредиентов')
-        page.setFont('Slimamif', size=16)
-        height = 750
-        for i, (name, data) in enumerate(final_list.items(), 1):
-            page.drawString(75, height, (f'<{i}> {name} - {data["amount"]}, '
-                                         f'{data["measurement_unit"]}'))
-            height -= 25
-        page.showPage()
-        page.save()
+            'ingredient_amount')
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = ('attachment;'
+                                           'filename="Shoppingcart.csv"')
+        response.write(u'\ufeff'.encode('utf8'))
+        writer = csv.writer(response)
+        for item in list(ingredients):
+            writer.writerow(item)
         return response

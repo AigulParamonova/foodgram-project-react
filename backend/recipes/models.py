@@ -14,14 +14,10 @@ class Tag(models.Model):
     )
     color = models.CharField(
         'Цвет',
-        blank=True,
-        null=True,
         max_length=7,
         unique=True)
     slug = models.SlugField(
         'Ссылка',
-        blank=True,
-        null=True,
         max_length=200,
         unique=True)
 
@@ -71,7 +67,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
-        through='IngredientRecipe'
+        through='IngredientRecipe',
     )
     tags = models.ManyToManyField(
         Tag,
@@ -86,8 +82,6 @@ class Recipe(models.Model):
             MinValueValidator(1)
         ]
     )
-    is_favorited = models.BooleanField()
-    is_in_shopping_cart = models.BooleanField()
 
     class Meta:
         ordering = ['-pub_date']
@@ -120,7 +114,6 @@ class IngredientRecipe(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
         verbose_name = 'Количество ингредиента'
         verbose_name_plural = 'Количество ингредиентов'
 
