@@ -9,10 +9,10 @@ from .views import (CustomUserViewSet, IngredientsViewSet, RecipesViewSet,
                     TagsViewSet)
 
 router = DefaultRouter()
-router.register('users', CustomUserViewSet, basename='users')
-router.register('tags', TagsViewSet, basename='tags')
-router.register('ingredients', IngredientsViewSet, basename='ingredients')
-router.register('recipes', RecipesViewSet, basename='recipes')
+router.register(r'users', CustomUserViewSet, basename='users')
+router.register(r'tags', TagsViewSet, basename='tags')
+router.register(r'ingredients', IngredientsViewSet, basename='ingredients')
+router.register(r'recipes', RecipesViewSet, basename='recipes')
 
 
 urlpatterns = [
