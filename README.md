@@ -32,14 +32,17 @@
 
 Заполнение базы данными:
 
+`docker-compose exec backend python manage.py collectstatic --no-input`
 `docker-compose exec backend python manage.py makemigrations --noinput`
 `docker-compose exec backend python manage.py migrate --noinput`
 `docker-compose exec backend python manage.py createsuperuser`
-`docker-compose exec backend python manage.py collectstatic --no-input`
+`docker-compose exec backend python manage.py loader`
+
 
 Докуметация API:
-``
+`http://84.252.141.70/api/docs/redoc.html`
 
 Проект:
-``
+`http://84.252.141.70`
+`http://foodgram-backend.tk`
 
