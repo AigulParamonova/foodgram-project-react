@@ -11,10 +11,10 @@ from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
 from users.models import Subscribe, User
 
 from .filters import RecipeFilter
+from .mixins import RetrieveListViewSet
 from .permissions import IsAuthorAdminOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientSerializer, PasswordSerializer,
@@ -100,18 +100,20 @@ class CustomUserViewSet(UserViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TagsViewSet(ReadOnlyModelViewSet):
+class TagsViewSet(RetrieveListViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny, )
+    pagination_class = None
 
 
-class IngredientsViewSet(ReadOnlyModelViewSet):
+class IngredientsViewSet(RetrieveListViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny, )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
+    pagination_class = None
 
 
 class RecipesViewSet(viewsets.ModelViewSet):

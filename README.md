@@ -32,11 +32,11 @@
 
 Заполнение базы данными:
 
-`docker-compose exec backend python manage.py collectstatic --no-input`
-`docker-compose exec backend python manage.py makemigrations --noinput`
-`docker-compose exec backend python manage.py migrate --noinput`
-`docker-compose exec backend python manage.py createsuperuser`
-`docker-compose exec backend python manage.py loader`
+`sudo docker-compose exec backend python manage.py collectstatic --no-input`
+`sudo docker-compose exec backend python manage.py makemigrations --noinput`
+`sudo docker-compose exec backend python manage.py migrate --noinput`
+`sudo docker-compose exec backend python manage.py createsuperuser`
+`sudo docker-compose exec backend python manage.py loader`
 
 
 Докуметация API:
