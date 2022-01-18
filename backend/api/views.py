@@ -28,14 +28,6 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
 
     @action(detail=False,
-            methods=['get'],
-            permission_classes=(IsAuthenticated, ))
-    def me(self, request, *args, **kwargs):
-        user = request.user
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=False,
             methods=['post'],
             permission_classes=(IsAuthenticated, ))
     def set_password(self, request, pk=None):
