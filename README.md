@@ -46,3 +46,6 @@
 `http://84.252.141.70`
 `http://foodgram-backend.tk`
 
+Суперпользователь:
+`Адрес электронной почты: jamie@yandex.ru`
+`Пароль: expert2022`
