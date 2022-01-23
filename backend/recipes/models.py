@@ -22,7 +22,7 @@ class Tag(models.Model):
         unique=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ('name', )
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
@@ -39,7 +39,7 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        ordering = ['name']
+        ordering = ('name', )
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
@@ -84,7 +84,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date', )
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -108,9 +108,10 @@ class IngredientRecipe(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         'Количество',
-        validators=[
-            MinValueValidator(1)
-        ]
+        validators=(
+            MinValueValidator(
+                1, error_messages='Выберете хотя бы 1 ингредиент.'),
+        )
     )
 
     class Meta:
