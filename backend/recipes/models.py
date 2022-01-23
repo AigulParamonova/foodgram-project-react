@@ -78,9 +78,10 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
-        validators=[
-            MinValueValidator(1)
-        ]
+        validators=(
+            MinValueValidator(
+                1, error_messages='Минимальное время приготовления 1 минута.')
+        )
     )
 
     class Meta:
@@ -110,7 +111,7 @@ class IngredientRecipe(models.Model):
         'Количество',
         validators=(
             MinValueValidator(
-                1, error_messages='Выберете хотя бы 1 ингредиент.'),
+                1, error_messages='Выберете хотя бы 1 ингредиент.')
         )
     )
 
