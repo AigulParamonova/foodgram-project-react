@@ -80,7 +80,7 @@ class Recipe(models.Model):
         'Время приготовления',
         validators=(
             MinValueValidator(
-                1, message='Минимальное время приготовления 1 минута.')
+                1, message='Минимальное время приготовления 1 минута.'),
         )
     )
 
@@ -111,7 +111,7 @@ class IngredientRecipe(models.Model):
         'Количество',
         validators=(
             MinValueValidator(
-                1, message='Выберете хотя бы 1 ингредиент.')
+                1, message='Выберете хотя бы 1 ингредиент.'),
         )
     )
 
