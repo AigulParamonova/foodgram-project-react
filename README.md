@@ -17,6 +17,7 @@
 #### Как запустить проект:
 
 Клонировать репозиторий и перейти в него в командной строке:
+
 `https://github.com/AigulParamonova/foodgram-project-react.git`
 
 `cd foodgram-project-react`
